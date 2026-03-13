@@ -1,4 +1,4 @@
-package com.localagent;
+package com.localagent.agent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,14 +53,15 @@ public class Agent {
 
         //Hacer llamada HTTP a Ollama
         RequestBody body = RequestBody.create(
-            gson.toJson(payload),
-            MediaType.get("application/json")
+                gson.toJson(payload),
+                MediaType.get("application/json")
         );
 
         Request request = new Request.Builder().url(OLLAMA_URL).post(body).build();
-        
-        try (Response response = client.newCall(request).execute() ){
-            String responseBody = response.body().string();
+
+        try (Response response = client.newCall(request).execute()) {
+            okhttp3.ResponseBody respBody = response.body();
+            String responseBody = respBody != null ? respBody.string() : "";
             JsonObject responseJSON = gson.fromJson(responseBody, JsonObject.class);
             String responseMessage = responseJSON.getAsJsonObject("message").get("content").getAsString();
 
@@ -71,6 +72,12 @@ public class Agent {
         } catch (Exception e) {
             return "Error: ".concat(e.getMessage());
         }
+    }
+
+    public void clearHistory() {
+        // Resetea pero mantiene el system prompt
+        historial.clear();
+        historial.add(new Message("system", SYSTEM_PROMPT));
     }
 
     // Clase interna para representar un mensaje

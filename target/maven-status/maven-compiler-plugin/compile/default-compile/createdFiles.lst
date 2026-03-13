@@ -1,4 +1,4 @@
-com\localagent\Agent$Message.class
-com\localagent\RAG\documentLoader.class
-com\localagent\Agent.class
+com\localagent\agent\Agent$Message.class
 com\localagent\App.class
+com\localagent\agent\Agent.class
+com\localagent\RAG\DocumentLoader.class
