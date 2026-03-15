@@ -20,7 +20,7 @@ public class EmbeddingService {
 
     private String fullURL = OLLAMA_URL.concat(DIRECTION);
 
-    private double[] embedInfo(String info) {
+    public double[] embedInfo(String info) {
         JsonObject payload = new JsonObject();
         payload.addProperty("model", MODEL);
         payload.addProperty("input", info);
