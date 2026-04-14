@@ -12,6 +12,7 @@ import org.apache.pdfbox.text.PDFTextStripper;
 
 public class DocumentLoader {
 
+    //Metodo que saca todo el texto de un PDF
     public String loadDocument(String ruta) {
         try (PDDocument documento = Loader.loadPDF(new File(ruta))) {
             PDFTextStripper textStripper = new PDFTextStripper();
@@ -23,6 +24,7 @@ public class DocumentLoader {
         } 
     }
 
+    //Divide el texto en chunks con una medida y un solapamiento determinado
     public List<String> chunkText(String texto, int medidaChunk, int solapamiento){
         int incrementos = medidaChunk - solapamiento;
         List<String> chunks = new ArrayList<>();

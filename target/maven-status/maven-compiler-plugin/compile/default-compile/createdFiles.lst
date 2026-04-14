@@ -1,4 +1,8 @@
+com\localagent\RAG\EmbeddingService.class
+com\localagent\RAG\DocumentLoader.class
+com\localagent\RAG\VectorStore.class
+com\localagent\model\Chunk.class
 com\localagent\agent\Agent$Message.class
+com\localagent\RAG\RAGService.class
 com\localagent\App.class
 com\localagent\agent\Agent.class
-com\localagent\RAG\DocumentLoader.class
