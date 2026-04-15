@@ -1,11 +1,15 @@
 package com.localagent.agent;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.localagent.model.Chunk;
+import com.localagent.utils.Utils;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -25,6 +29,7 @@ public class Agent {
     private final List<Message> historial = new ArrayList<>();
     private final OkHttpClient client = new OkHttpClient();
     private final Gson gson = new Gson();
+    private String context;
 
     public Agent() {
         //AL iniciar el agente haremos que primero lea el SYSTEM_PROMPT.
@@ -32,17 +37,29 @@ public class Agent {
     }
 
     public String chat(String userMessage) {
-        //Se añade el mensaje al historial
-        historial.add(new Message("user", userMessage));
 
         //Se construye el JSON con el historial
         JsonObject payload = new JsonObject();
         payload.addProperty("model", MODEL);
         payload.addProperty("stream", false);
 
+        //List auxiliar para el payload
+        List<Message> listaMessagesOllama = new ArrayList<>(historial);
+        Message msgAux;
+        if (!Utils.isEmptyString(this.context)) {
+            String aux = this.context.concat(userMessage);
+            msgAux = new Message("user", aux);
+        }else{
+            msgAux = new Message("user", userMessage);
+        }
+        listaMessagesOllama.add(msgAux);
+
+        //Se añade el mensaje al historial
+        historial.add(new Message("user", userMessage));
+
         //JSON de mensajes:
         JsonArray mensajes = new JsonArray();
-        for (Message m : historial) {
+        for (Message m : listaMessagesOllama) {
             JsonObject msg = new JsonObject();
             msg.addProperty("role", m.role);
             msg.addProperty("content", m.content);
@@ -91,5 +108,14 @@ public class Agent {
             this.role = role;
             this.content = content;
         }
+    }
+
+    public void fillContext(List<SimpleEntry<Chunk, Double>> similaridades) {
+        if (!similaridades.isEmpty()) {
+            this.context = "Usa este contexto: \n".concat(similaridades.stream().map(s -> s.getKey().getText()).collect(Collectors.joining("\n### CHUNK ###\n")));
+        } else {
+            this.context = "";
+        }
+        //historial.add(new Message("system", this.context));
     }
 }
