@@ -14,7 +14,7 @@ public class RAGService {
         DocumentLoader docLoader = new DocumentLoader();
         
         String contenido = docLoader.loadDocument(ruta);
-        List< String> chunkList = docLoader.chunkText(contenido, 50, 10);
+        List< String> chunkList = docLoader.chunkText(contenido, 800, 100);
         double[] vectoresFichero;
         
         for (int i = 0; i < chunkList.size(); i++) {

@@ -1,3 +1,4 @@
+com\localagent\utils\Utils.class
 com\localagent\RAG\EmbeddingService.class
 com\localagent\RAG\DocumentLoader.class
 com\localagent\RAG\VectorStore.class

@@ -3,6 +3,7 @@ package com.localagent.agent;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -19,15 +20,15 @@ import okhttp3.Response;
 
 public class Agent {
 
-    private static final String OLLAMA_URL = "http://localhost:11434";
+    private static final String OLLAMA_URL = "http://localhost:11434/api/chat";
     private static final String MODEL = "mistral";
-    private static final String SYSTEM_PROMPT = "Eres un experto en fotografia especializado en streetphotography y tu obsesión es capturar "
+    private static final String SYSTEM_PROMPT = " Responde siempre en castellano teniendo en cuenta que eres un experto en fotografia especializado en streetphotography y tu obsesión es capturar "
             + "la esencia de los momentos cotidianos, creando arte en lo costumbrista y tu objetivo es ayudar a "
             + "los usuarios a mejorar y dar consejos criticos";
 
     // cada mensaje es un objeto con rol y content
     private final List<Message> historial = new ArrayList<>();
-    private final OkHttpClient client = new OkHttpClient();
+    private final OkHttpClient client =  new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
     private final Gson gson = new Gson();
     private String context;
 
@@ -77,8 +78,11 @@ public class Agent {
         Request request = new Request.Builder().url(OLLAMA_URL).post(body).build();
 
         try (Response response = client.newCall(request).execute()) {
+            System.out.println("response: " + response);
             okhttp3.ResponseBody respBody = response.body();
+            //System.out.println("body: " + respBody);
             String responseBody = respBody != null ? respBody.string() : "";
+            System.out.println("responseBody: "+ responseBody);
             JsonObject responseJSON = gson.fromJson(responseBody, JsonObject.class);
             String responseMessage = responseJSON.getAsJsonObject("message").get("content").getAsString();
 

@@ -4,6 +4,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 
 import com.localagent.RAG.RAGService;
+import com.localagent.agent.Agent;
 import com.localagent.model.Chunk;
 
 /**
@@ -18,7 +19,8 @@ public class App {
         for (int i = 0; i < 5; i++) {
             System.out.println(vector[i]);
         }*/
-        String ruta = "C:/proyectos/local-agent/src/resources/foto.pdf";
+        String ruta = "C:/proyectos/local-agent/src/resources/The-Essentials-of-street-phtography.pdf";
+        final String DISCLAIMER = "no se encontró información relevante en los documentos, la respuesta está basada en el conocimiento del modelo de lenguaje y podría contener errores \n";
         /*DocumentLoader docLoader = new DocumentLoader();
         String contenido = docLoader.loadDocument(ruta);
         List< String> chunkList = docLoader.chunkText(contenido, 50, 10);
@@ -36,8 +38,17 @@ public class App {
 
         List<SimpleEntry<Chunk, Double>> similaridades = vs.similarity(embededRequest, 10); */
         RAGService rag = new RAGService();
+        Agent agent = new Agent();
+        boolean areChunksRelevant;
+        String respuesta;
         rag.cargarVectorStore(ruta);
-        List<SimpleEntry<Chunk, Double>> similaridades = rag.buscarChunk(consulta, 10);
+        List<SimpleEntry<Chunk, Double>> similaridades = rag.buscarChunk(consulta, 5);
+        areChunksRelevant = !similaridades.isEmpty();
+        agent.fillContext(similaridades);
+        respuesta = areChunksRelevant ? agent.chat(consulta) : DISCLAIMER.concat(agent.chat(consulta));
+        System.out.println(respuesta);
+        
+
 
         for (SimpleEntry<Chunk, Double> similaridad : similaridades){
             System.out.println(similaridad.getKey().getText() + " " +similaridad.getValue());

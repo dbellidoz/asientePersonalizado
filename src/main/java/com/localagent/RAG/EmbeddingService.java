@@ -1,5 +1,7 @@
 package com.localagent.RAG;
 
+import java.util.concurrent.TimeUnit;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -16,7 +18,7 @@ public class EmbeddingService {
     private final String DIRECTION = "/api/embed";
     private final String MODEL = "nomic-embed-text";
 
-    private final OkHttpClient CLIENT = new OkHttpClient();
+    private final OkHttpClient CLIENT = new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
     private final Gson GSON = new Gson();
 
     private String fullURL = OLLAMA_URL.concat(DIRECTION);
