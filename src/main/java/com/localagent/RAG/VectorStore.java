@@ -9,6 +9,7 @@ import com.localagent.model.Chunk;
 public class VectorStore {
 
     private List<Chunk> chunksList = new ArrayList<>();
+    private static final double UMBRAL_RELEVANCIA = 0.53;
 
     //Metodo que añade los chucks de consulta
     public void addNewChunkDocumento(Chunk chunk) {
@@ -49,12 +50,14 @@ public class VectorStore {
         List<AbstractMap.SimpleEntry<Chunk, Double>> similaridades = new ArrayList<>();
         for (int i = 0; i < chunksList.size(); i++) {
             Double similaridad = cosineSimilarity(embInput, chunksList.get(i).getEmbedding());
-            similaridades.add(new AbstractMap.SimpleEntry<>(chunksList.get(i), similaridad));
+            if(similaridad > UMBRAL_RELEVANCIA){
+                similaridades.add(new AbstractMap.SimpleEntry<>(chunksList.get(i), similaridad));
+            }
         }
 
         similaridades.sort((a, b) -> -1 * Double.compare(a.getValue(), b.getValue()));
 
-        return similaridades.subList(0, howmanyChunks);
+        return similaridades.subList(0, Math.min(howmanyChunks,similaridades.size()));
     }
 
 }

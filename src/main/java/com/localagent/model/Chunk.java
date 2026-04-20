@@ -3,6 +3,7 @@ package com.localagent.model;
 public class Chunk {
     private double[] embedding;
     private String text;
+    private String source;
     
     public double[] getEmbedding() {
         return embedding;
@@ -20,9 +21,14 @@ public class Chunk {
         this.text = text;
     }
 
-    public Chunk(double[] embedding, String text) {
+    public Chunk(double[] embedding, String text, String source) {
         this.embedding = embedding;
         this.text = text;
+        this.source = source; 
+    }
+
+    public String getSource() {
+        return source;
     }
     
     

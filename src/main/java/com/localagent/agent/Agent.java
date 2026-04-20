@@ -1,15 +1,12 @@
 package com.localagent.agent;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.localagent.model.Chunk;
 import com.localagent.utils.Utils;
 
 import okhttp3.MediaType;
@@ -30,14 +27,13 @@ public class Agent {
     private final List<Message> historial = new ArrayList<>();
     private final OkHttpClient client =  new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
     private final Gson gson = new Gson();
-    private String context;
 
     public Agent() {
         //AL iniciar el agente haremos que primero lea el SYSTEM_PROMPT.
         historial.add(new Message("system", SYSTEM_PROMPT));
     }
 
-    public String chat(String userMessage) {
+    public String chat(String userMessage, String context) {
 
         //Se construye el JSON con el historial
         JsonObject payload = new JsonObject();
@@ -47,8 +43,8 @@ public class Agent {
         //List auxiliar para el payload
         List<Message> listaMessagesOllama = new ArrayList<>(historial);
         Message msgAux;
-        if (!Utils.isEmptyString(this.context)) {
-            String aux = this.context.concat(userMessage);
+        if (!Utils.isEmptyString(context)) {
+            String aux = context + "\nPregunta: " + userMessage;
             msgAux = new Message("user", aux);
         }else{
             msgAux = new Message("user", userMessage);
@@ -114,12 +110,4 @@ public class Agent {
         }
     }
 
-    public void fillContext(List<SimpleEntry<Chunk, Double>> similaridades) {
-        if (!similaridades.isEmpty()) {
-            this.context = "Usa este contexto: \n".concat(similaridades.stream().map(s -> s.getKey().getText()).collect(Collectors.joining("\n### CHUNK ###\n")));
-        } else {
-            this.context = "";
-        }
-        //historial.add(new Message("system", this.context));
-    }
 }
