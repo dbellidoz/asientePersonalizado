@@ -21,7 +21,7 @@ public class EmbeddingService {
     private final OkHttpClient CLIENT = new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
     private final Gson GSON = new Gson();
 
-    private String fullURL = OLLAMA_URL.concat(DIRECTION);
+    private final String fullURL = OLLAMA_URL.concat(DIRECTION);
 
     public double[] embedInfo(String info) {
         //Creacion del payload

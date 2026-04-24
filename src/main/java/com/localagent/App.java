@@ -1,12 +1,8 @@
 package com.localagent;
 
-import java.util.AbstractMap.SimpleEntry;
-import java.util.List;
-
 import com.localagent.RAG.RAGService;
 import com.localagent.agent.Agent;
-import com.localagent.model.Chunk;
-import com.localagent.utils.Utils;
+import com.localagent.server.ServerAgent;
 
 /**
  * Hello world!
@@ -18,10 +14,12 @@ public class App {
     public static void main(String[] args) {
         
         
-        String consulta ="Que consejo me darías para empezar con la foto callejera";
+        //String consulta ="Que consejo me darías para empezar con la foto callejera";
         RAGService rag = new RAGService();
         Agent agent = new Agent();
-        boolean areChunksRelevant;
+        ServerAgent sa = new ServerAgent(agent, rag);
+        
+        /*boolean areChunksRelevant;
         String respuesta;
         rag.cargarDirectorio(DOCS_DIR);
         List<SimpleEntry<Chunk, Double>> similaridades = rag.buscarChunk(consulta, 5);
@@ -30,6 +28,6 @@ public class App {
         System.out.println(respuesta);
         for (SimpleEntry<Chunk, Double> similaridad : similaridades){
             System.out.println(similaridad.getKey().getText() + " " +similaridad.getValue());
-        }
+        }*/
     }
 }

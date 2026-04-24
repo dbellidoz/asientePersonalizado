@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.localagent.utils.Constants;
 import com.localagent.utils.Utils;
 
 import okhttp3.MediaType;
@@ -19,18 +20,19 @@ public class Agent {
 
     private static final String OLLAMA_URL = "http://localhost:11434/api/chat";
     private static final String MODEL = "mistral";
-    private static final String SYSTEM_PROMPT = " Responde siempre en castellano teniendo en cuenta que eres un experto en fotografia especializado en streetphotography y tu obsesión es capturar "
+    private String system_prompt = Constants.SYSTEM_PROMPT;
+    /*private static final String SYSTEM_PROMPT = " Responde siempre en castellano teniendo en cuenta que eres un experto en fotografia especializado en streetphotography y tu obsesión es capturar "
             + "la esencia de los momentos cotidianos, creando arte en lo costumbrista y tu objetivo es ayudar a "
-            + "los usuarios a mejorar y dar consejos criticos";
+            + "los usuarios a mejorar y dar consejos criticos";*/
 
     // cada mensaje es un objeto con rol y content
     private final List<Message> historial = new ArrayList<>();
-    private final OkHttpClient client =  new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
+    private final OkHttpClient client = new OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build();
     private final Gson gson = new Gson();
 
     public Agent() {
         //AL iniciar el agente haremos que primero lea el SYSTEM_PROMPT.
-        historial.add(new Message("system", SYSTEM_PROMPT));
+        historial.add(new Message("system", this.system_prompt));
     }
 
     public String chat(String userMessage, String context) {
@@ -46,7 +48,7 @@ public class Agent {
         if (!Utils.isEmptyString(context)) {
             String aux = context + "\nPregunta: " + userMessage;
             msgAux = new Message("user", aux);
-        }else{
+        } else {
             msgAux = new Message("user", userMessage);
         }
         listaMessagesOllama.add(msgAux);
@@ -78,7 +80,7 @@ public class Agent {
             okhttp3.ResponseBody respBody = response.body();
             //System.out.println("body: " + respBody);
             String responseBody = respBody != null ? respBody.string() : "";
-            System.out.println("responseBody: "+ responseBody);
+            System.out.println("responseBody: " + responseBody);
             JsonObject responseJSON = gson.fromJson(responseBody, JsonObject.class);
             String responseMessage = responseJSON.getAsJsonObject("message").get("content").getAsString();
 
@@ -94,7 +96,12 @@ public class Agent {
     public void clearHistory() {
         // Resetea pero mantiene el system prompt
         historial.clear();
-        historial.add(new Message("system", SYSTEM_PROMPT));
+        historial.add(new Message("system", this.system_prompt));
+    }
+
+    public void setSystem_prompt(String system_prompt) {
+        this.system_prompt = system_prompt;
+        clearHistory();
     }
 
     // Clase interna para representar un mensaje
