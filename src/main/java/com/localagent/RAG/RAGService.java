@@ -26,6 +26,14 @@ public class RAGService {
         }
     }
 
+    public void cargarDocumento(String ruta) {
+        cargarVectorStore(ruta);
+    }
+
+    public void eliminarChunkFichero(String fichero){
+        vs.removeChunkDocument(fichero);
+    }
+
     public List<AbstractMap.SimpleEntry<Chunk, Double>> buscarChunk(String request, int nChunks) {
         double[] embeddedRequest = embeddingService.embedInfo(request);
         return vs.similarity(embeddedRequest, nChunks);

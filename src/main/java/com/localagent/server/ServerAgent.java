@@ -1,9 +1,14 @@
 package com.localagent.server;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.localagent.RAG.RAGService;
 import com.localagent.agent.Agent;
@@ -27,6 +32,13 @@ public class ServerAgent {
         // inicializar campos
         this.agent = agent;
         this.ragService = ragService;
+        //cargar prompt persistido
+        try {
+            String prompt = ConfigManager.loadSystemPrompt();
+            agent.setSystem_prompt(prompt);
+        } catch (Exception e) {
+            System.out.println("Error cargando el config: " + e.getMessage());
+        }
         // cargar directorio
         ragService.cargarDirectorio(Constants.DOCS_ROUTE);
         // definir endpoints
@@ -53,7 +65,7 @@ public class ServerAgent {
             String request = ctx.body();
             JsonObject body = gson.fromJson(request, JsonObject.class);
             String system_prompt = body.get("system_prompt").getAsString();
-            JsonObject payload  = new JsonObject();
+            JsonObject payload = new JsonObject();
             try {
                 ConfigManager.saveSystemPrompt(system_prompt);
                 agent.setSystem_prompt(system_prompt);
@@ -63,8 +75,88 @@ public class ServerAgent {
                 payload.addProperty("status", "KO");
                 payload.addProperty("mensaje", e.getMessage());
                 ctx.status(500);
-            }finally{
+            } finally {
                 ctx.json(gson.toJson(payload));
+                ctx.contentType("application/json");
+            }
+
+        });
+        app.get("/config", ctx -> {
+            String respuesta;
+            JsonObject json = new JsonObject();
+            try {
+                respuesta = ConfigManager.loadSystemPrompt();
+                json.addProperty("system_prompt", respuesta);
+            } catch (IOException e) {
+                respuesta = "Error cargando el prompt del fichero: " + e.getMessage();
+                json.addProperty("error", respuesta);
+                System.out.println(respuesta);
+                ctx.status(500);
+            } finally {
+                ctx.json(gson.toJson(json));
+                ctx.contentType("application/json");
+            }
+
+        });
+        app.post("/documents", ctx -> {
+            String respuesta = null;
+            JsonObject json = new JsonObject();
+            try {
+                var fichero = ctx.uploadedFile("fichero");
+                if (fichero == null || fichero.content() == null) {
+                    throw new IllegalArgumentException("No se ha recibido ningún archivo");
+                }
+                Path targetPath = Path.of(Constants.DOCS_ROUTE, fichero.filename());
+                Files.createDirectories(targetPath.getParent());
+                Files.copy(fichero.content(), targetPath);
+                ragService.cargarDocumento(targetPath.toString());
+
+                respuesta = "OK";
+
+            } catch (Exception e) {
+                respuesta = "NOK: error en cargando el documento: " + e.getMessage();
+                ctx.status(500);
+            } finally {
+                json.addProperty("returnValue", respuesta);
+                ctx.json(gson.toJson(json));
+                ctx.contentType("application/json");
+            }
+
+        });
+        app.delete("/documents/{fichero}", ctx -> {
+            String respuesta = null;
+            JsonObject json = new JsonObject();
+            try {
+                String fichero = ctx.pathParam("fichero");
+                Files.delete(Path.of(Constants.DOCS_ROUTE, fichero));
+                ragService.eliminarChunkFichero(fichero);
+                respuesta = "OK";
+            } catch (Exception e) {
+                respuesta = "NOK: error en cargando el documento: " + e.getMessage();
+                ctx.status(500);
+            } finally {
+                json.addProperty("returnValue", respuesta);
+                ctx.json(gson.toJson(json));
+                ctx.contentType("application/json");
+            }
+
+        });
+        app.get("/documents", ctx -> {
+            String respuesta = null;
+            JsonObject json = new JsonObject();
+            try (Stream<Path> documentos = Files.list(Path.of(Constants.DOCS_ROUTE))){
+                JsonArray jsonArray = new JsonArray();
+                documentos.map(pathdoc -> pathdoc.getFileName().toString())
+                        .filter(nombreFichero -> nombreFichero.endsWith("pdf"))
+                        .forEach(doc -> jsonArray.add(doc));
+                json.add("documentos", jsonArray);
+                respuesta = "OK";
+            } catch (Exception e) {
+                respuesta = "NOK: error al listar los documentos : " + e.getMessage();
+                ctx.status(500);
+            } finally {
+                json.addProperty("returnValue", respuesta);
+                ctx.json(gson.toJson(json));
                 ctx.contentType("application/json");
             }
 

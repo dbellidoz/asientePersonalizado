@@ -16,6 +16,11 @@ public class VectorStore {
         this.chunksList.add(chunk);
     }
 
+    //Metodo que elimina chunks en funcion del source
+    public void removeChunkDocument(String fichero){
+        this.chunksList.removeIf((chunk) -> chunk.getSource().equalsIgnoreCase(fichero));
+    }
+
     //Metodo privado que calcula la similaridad entre dos chunks (consulta - documentos)
     //Parametro 1: valores embebidos de la consulta
     //Parametro 2: valores embebidos de los documentos
