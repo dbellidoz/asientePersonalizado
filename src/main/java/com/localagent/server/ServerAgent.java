@@ -61,6 +61,10 @@ public class ServerAgent {
             ctx.contentType("application/json");
 
         });
+        app.get("/chat/history", ctx->{
+            JsonObject response = new JsonObject();
+            response.add("mensajes", agent.getHistory());
+        });
         app.post("/config", ctx -> {
             String request = ctx.body();
             JsonObject body = gson.fromJson(request, JsonObject.class);
@@ -160,6 +164,15 @@ public class ServerAgent {
                 ctx.contentType("application/json");
             }
 
+        });
+        app.post("/reset", ctx -> {
+            String respuesta = null;
+            JsonObject json = new JsonObject();
+            agent.clearHistory();
+            respuesta = "ok";
+            json.addProperty("returnValue", respuesta);
+            ctx.json(gson.toJson(json));
+            ctx.contentType("application/json");
         });
         app.start(PORT);
 

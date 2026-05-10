@@ -104,6 +104,19 @@ public class Agent {
         clearHistory();
     }
 
+    public JsonArray getHistory(){
+        JsonArray history = new JsonArray();
+        this.historial.forEach((message) -> {
+            JsonObject jo = new JsonObject();
+            if(!"system".equals(message.role)){
+                jo.addProperty("role", message.role);
+                jo.addProperty("content", message.content);
+                history.add(jo);
+            }
+        });
+        return history;
+    }
+
     // Clase interna para representar un mensaje
     // Es private porque nadie fuera de Agent necesita conocerla
     private static class Message {
